@@ -74,10 +74,35 @@
 
   .eyebrow {
     font-size: 13px;
-    color: var(--gold);
+    color: #F24332;
     font-weight: 600;
     letter-spacing: 0.04em;
     margin-bottom: 10px;
+  }
+
+  .intro-negrito {
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink);
+    margin: 0 0 16px;
+  }
+
+  .intro-laranja {
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #F24332;
+    margin: 0 0 26px;
+  }
+
+  .voce-chegou {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--green);
+    margin: 0 0 10px;
   }
 
   h1 {
@@ -162,6 +187,7 @@
   }
 
   .btn-avancar {
+    display: block;
     width: 100%;
     margin-top: 22px;
     padding: 16px;
@@ -174,6 +200,8 @@
     border-radius: 12px;
     cursor: pointer;
     text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
     transition: background 0.15s, opacity 0.15s;
   }
 
@@ -281,7 +309,7 @@
       <path id="trilhaPreenchida" d="M 14 60 C 90 60, 90 14, 166 14 C 242 14, 242 60, 318 60 C 394 60, 394 14, 470 14"
         fill="none" stroke="#C08A28" stroke-width="4" stroke-linecap="round"
         stroke-dasharray="1" stroke-dashoffset="1"/>
-      <circle id="marcador" cx="14" cy="60" r="7" fill="#1F3A2E"/>
+      <circle id="marcador" cx="14" cy="60" r="7" fill="#F24332"/>
       <g id="casaFinal" transform="translate(458, 2)">
         <path d="M12 0 L24 10 L21 10 L21 22 L3 22 L3 10 L0 10 Z" fill="#1F3A2E"/>
       </g>
@@ -297,6 +325,7 @@
 /* ===================== CONFIGURAÇÃO ===================== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzrqzL_O2vx2cvDOqgV8g5vzmxcVpNZBNGII_I78yYeoAeu1tDmwS3RYEhdzrPzEWMx/exec';
 const TOKEN = 'mapa2025-rwneri-imob';
+const NUMERO_WHATSAPP_EQUIPE = '5562900000000'; // TROQUE pelo número real da equipe (com DDI 55 + DDD + número)
 
 /* ===================== IMAGENS (embutidas em base64) ===================== */
 const IMAGENS = {
@@ -336,7 +365,8 @@ const etapas = [
     tipo: 'intro',
     eyebrow: 'Antes de começar eu preciso saber…',
     titulo: 'Você está prestes a iniciar a caminhada até as chaves do seu primeiro imóvel.',
-    sub: 'Temos um mapa pra te entregar, mas para traçar o caminho preciso das suas respostas. Você se compromete consigo mesmo a chegar até o final desse pequeno quiz?',
+    subLinha1: 'Temos um mapa para te entregar, mas para traçar o caminho preciso das suas respostas.',
+    subLinha2: 'Você se compromete consigo mesmo a chegar até o final desse pequeno quiz?',
     botao: 'Sim, vou até o final!',
     botaoRejeitar: 'Não, quero perder essa oportunidade.',
     imagem: 1
@@ -345,12 +375,12 @@ const etapas = [
     id: 'dados_pessoais',
     tipo: 'campos',
     eyebrow: 'Ponto de partida',
-    titulo: 'Pra começar, como podemos te chamar?',
-    sub: 'É com esses dados que vamos entrar em contato pra te entregar o seu mapa e te explicar o caminho ideal.',
+    titulo: 'Para começar, como podemos te chamar?',
+    sub: 'São com esses dados que vamos entrar em contato pra te entregar o seu mapa e te explicar o caminho ideal.',
     imagem: 2,
     campos: [
       { key: 'nome', label: 'Nome completo', placeholder: 'Seu nome', tipo: 'text' },
-      { key: 'telefone', label: 'WhatsApp', placeholder: '(00) 00000-0000', tipo: 'tel' },
+      { key: 'telefone', label: 'WhatsApp', placeholder: '(00) 00000-0000', tipo: 'tel', mascara: 'telefone' },
       { key: 'email', label: 'E-mail', placeholder: 'voce@email.com', tipo: 'email' }
     ],
     botaoLabel: 'Próximo Passo'
@@ -376,21 +406,18 @@ const etapas = [
   },
   {
     id: 'regiao',
-    tipo: 'campos',
+    tipo: 'escolha',
     eyebrow: 'O ponto no mapa',
-    titulo: 'Em qual região você imagina esse novo endereço?',
-    sub: 'Me diga qual é o bairro ou região o seu novo lar precisa estar.',
+    titulo: 'Você prefere que seu novo imóvel esteja em condomínio fechado?',
+    campo: 'regiao',
     imagem: 5,
-    campos: [
-      { key: 'regiao', label: 'Região de preferência', placeholder: 'Ex: Jundiaí, Anápolis', tipo: 'text' }
-    ],
-    botaoExtra: { label: 'Não tenho preferência de bairro', valor: 'Sem preferência' }
+    opcoes: ['Sim', 'Não', 'Não tenho preferência']
   },
   {
     id: 'simulacao_caixa',
     tipo: 'escolha',
     eyebrow: 'Checando a estrada',
-    titulo: 'Você já fez uma simulação pra ver quanto a Caixa liberaria pra você?',
+    titulo: 'Você já fez uma simulação pra ver quanto a CAIXA liberaria pra você?',
     campo: 'simulacao_caixa',
     imagem: 6,
     opcoes: ['Já fiz', 'Ainda não fiz']
@@ -473,8 +500,10 @@ const etapas = [
   {
     id: 'final',
     tipo: 'final',
-    titulo: 'Parabéns, você mostrou que está decidido e merece conquistar as chaves do seu novo lar!',
-    sub: 'Seu mapa começou a ser desenhado, nossa equipe vai entrar em contato com você para entregá-lo assim que terminarmos.',
+    destaque: 'Você chegou!',
+    titulo: 'Parabéns! você mostrou que está decidido e está no caminho certo para conquistar as chaves do seu novo imóvel.',
+    sub: 'Seu mapa começou a ser desenhado. Um membro da nossa equipe entrará em contato com você, mas antes para dar continuidade ao seu atendimento, clique aqui.',
+    botaoWhats: 'Continuar atendimento no WhatsApp',
     imagem: 15
   }
 ];
@@ -527,6 +556,26 @@ function aplicarMascaraData(input) {
   });
 }
 
+/* ===================== MÁSCARA DE TELEFONE ===================== */
+function aplicarMascaraTelefone(input) {
+  input.addEventListener('input', () => {
+    let v = input.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length === 0) { input.value = ''; return; }
+    let formatado = '(' + v.slice(0, 2);
+    if (v.length >= 2) formatado += ') ';
+    if (v.length > 2) {
+      if (v.length <= 6) {
+        formatado += v.slice(2);
+      } else if (v.length <= 10) {
+        formatado += v.slice(2, 6) + '-' + v.slice(6);
+      } else {
+        formatado += v.slice(2, 7) + '-' + v.slice(7);
+      }
+    }
+    input.value = formatado;
+  });
+}
+
 /* ===================== RENDERIZAÇÃO ===================== */
 const card = document.getElementById('card');
 
@@ -546,7 +595,8 @@ function renderizar() {
       <div class="eyebrow">${etapa.eyebrow}</div>
       <h1>${etapa.titulo}</h1>
       ${imgHtml(etapa.imagem)}
-      <p class="sub">${etapa.sub}</p>
+      <p class="intro-negrito">${etapa.subLinha1}</p>
+      <p class="intro-laranja">${etapa.subLinha2}</p>
       <button class="btn-avancar" id="btnPrincipal">${etapa.botao}</button>
       <button class="btn-secundario-vermelho" id="btnRejeitar">${etapa.botaoRejeitar}</button>
     `;
@@ -559,9 +609,11 @@ function renderizar() {
 
   if (etapa.tipo === 'final') {
     card.innerHTML = `
+      <div class="voce-chegou">${etapa.destaque}</div>
       <h1>${etapa.titulo}</h1>
       ${imgHtml(etapa.imagem)}
       <p class="sub">${etapa.sub}</p>
+      <a class="btn-avancar" href="https://wa.me/${NUMERO_WHATSAPP_EQUIPE}" target="_blank" rel="noopener">${etapa.botaoWhats}</a>
     `;
   }
 
@@ -587,6 +639,7 @@ function renderizar() {
 
     etapa.campos.forEach(c => {
       if (c.mascara === 'data') aplicarMascaraData(document.getElementById('campo_' + c.key));
+      if (c.mascara === 'telefone') aplicarMascaraTelefone(document.getElementById('campo_' + c.key));
     });
 
     document.getElementById('btnPrincipal').onclick = () => {
